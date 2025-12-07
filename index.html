@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <div id="data"></div>
+    <script>
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbxz8mczromb-Fa6Iq2jK9Ezm2tUYsDR2waJaUdelnturU0JNCTh4p4F_T1KPgKuvo9v/exec';
+
+     // Получаем данные
+        fetch(scriptUrl)
+            .then(response => response.json())
+            .then(data => {
+                // data содержит то же самое, что и ваша ссылка
+                console.log(data);
+                document.getElementById('data').innerHTML = 
+                    JSON.stringify(data, null, 2);
+            });
+    </script>
+  </body>
+</html>
