@@ -1,24 +1,148 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <base target="_top">
-  </head>
-  <body>
-    <h2>Тест автоматического деплоя Netlify</h2>
+<head>
+    <title>Простой тест Google Apps Script</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3367d6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #f2f2f2;
+        }
+        .success {
+            color: green;
+            padding: 10px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            color: red;
+            padding: 10px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            color: #666;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест Google Apps Script Web App</h1>
+    
+    <input type="text" id="url" 
+           placeholder="https://script.google.com/macros/s/ВАШ_ID/exec"
+           value="https://script.google.com/macros/s/ВАШ_ID/exec"
+           style="width: 100%;">
+    
+    <button onclick="test()">Тест</button>
+    <button onclick="load()">Загрузить данные</button>
+    
+    <div id="message"></div>
     <div id="data"></div>
-    <h2>Тест автоматического деплоя Netlify</h2>
+    
     <script>
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbxz8mczromb-Fa6Iq2jK9Ezm2tUYsDR2waJaUdelnturU0JNCTh4p4F_T1KPgKuvo9v/exec';
-
-     // Получаем данные
-        fetch(scriptUrl)
-            .then(response => response.json())
-            .then(data => {
-                // data содержит то же самое, что и ваша ссылка
-                console.log(data);
-                document.getElementById('data').innerHTML = 
-                    JSON.stringify(data, null, 2);
-            });
+        function showMessage(text, type) {
+            const div = document.getElementById('message');
+            div.innerHTML = text;
+            div.className = type;
+        }
+        
+        async function test() {
+            const url = document.getElementById('url').value;
+            showMessage('Проверяем соединение...', 'loading');
+            
+            try {
+                const response = await fetch(url);
+                showMessage(`✅ Соединение успешно! Статус: ${response.status}`, 'success');
+            } catch (error) {
+                showMessage(`❌ Ошибка: ${error.message}`, 'error');
+            }
+        }
+        
+        async function load() {
+            const url = document.getElementById('url').value;
+            showMessage('Загружаем данные...', 'loading');
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    showMessage('Таблица пуста', 'error');
+                    return;
+                }
+                
+                let html = '<h2>Данные из Google Sheets:</h2>';
+                html += '<table>';
+                
+                // Заголовки (первая строка)
+                html += '<tr>';
+                data[0].forEach(cell => {
+                    html += `<th>${cell}</th>`;
+                });
+                html += '</tr>';
+                
+                // Данные (остальные строки)
+                for (let i = 1; i < data.length; i++) {
+                    html += '<tr>';
+                    data[i].forEach(cell => {
+                        html += `<td>${cell || ''}</td>`;
+                    });
+                    html += '</tr>';
+                }
+                
+                html += '</table>';
+                
+                document.getElementById('data').innerHTML = html;
+                showMessage(`✅ Загружено ${data.length} строк`, 'success');
+                
+            } catch (error) {
+                showMessage(`❌ Ошибка: ${error.message}`, 'error');
+            }
+        }
+        
+        // Автозагрузка при вводе URL (опционально)
+        document.getElementById('url').addEventListener('change', function() {
+            localStorage.setItem('gsheetUrl', this.value);
+        });
+        
+        // Восстановление URL из localStorage
+        const savedUrl = localStorage.getItem('gsheetUrl');
+        if (savedUrl) {
+            document.getElementById('url').value = savedUrl;
+        }
     </script>
-  </body>
+</body>
 </html>
